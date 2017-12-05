@@ -1,0 +1,103 @@
+{% extends 'baseView.twig' %}
+
+{% block styles %}
+{% endblock %}
+
+{% block body %}
+  <h2>Список администраторов</h2>
+
+  {% if action is defined %}
+    {% if action == 'edit' %}
+      <div class="table-responsive">
+        <form action="{{ staticCall('Router', 'route', ['users.update', {'id' : id }]) }}" method="POST">
+          <table class="table table-bordered">
+            <tr>
+              <th colspan="5">Изменение пользователя</th>
+            </tr>
+            <tr>
+              <th>№п/п</th>
+              <th>Логин</th>
+              <th>Пароль</th>
+              <th>Права</th>
+              <th>Действия</th>
+            </tr>
+            {% for user in items %}
+              {% if user['id'] == id %}
+                <tr>
+                  <td>{{ loop.index }}</td>
+                  <td><input type="text" name="name" value="{{ user['name'] }}" placeholder="Логин"></td>
+                  <td><input type="password" name="password" value="" placeholder="Пароль"></td>
+                  <td>{{ user['role'] }}</td>
+                  <td>
+                    <input type="hidden" name="id" value="{{ id }}">
+                    <input type="hidden" name='_method' value="PUT">
+                    <input class="btn" type="submit" name="save" value="Сохранить">
+                  </td>
+                </tr>
+              {% endif %}
+            {% endfor %}
+          </table>
+        </form>
+      </div>
+
+    {% else %}
+
+      <div class="table-responsive">
+        <form action="{{ staticCall('Router', 'route', ['users.index']) }}" method="POST">
+
+          <table class="table table-bordered">
+            <tr>
+              <th colspan="5">Добавление нового пользователя</th>
+            </tr>
+            <tr>
+              <th>№п/п</th>
+              <th>Логин</th>
+              <th>Пароль</th>
+              <th>Права</th>
+              <th>Действия</th>
+            </tr>
+            <tr>
+              <td>{{ loop.index }}</td>
+              <td><input type="text" name="name" value="" placeholder="Логин"></td>
+              <td><input type="password" name="password" value="" placeholder="Пароль"></td>
+              <td>admin</td>
+              <td>
+                <input class="btn" type="submit" name="add" value="Добавить">
+              </td>
+            </tr>
+          </table>
+        </form>
+      </div>
+
+    {% endif %}
+  {% endif %}
+  <div class="table-responsive">
+    <table class="table table-bordered">
+      <tr>
+        <th>№п/п</th>
+        <th>Логин</th>
+        <th>Пароль</th>
+        <th>Права</th>
+        <th>Действия</th>
+      </tr>
+      {% for user in items %}
+        <tr>
+          <td>{{ loop.index }}</td>
+          <td>{{ user['name'] }}</td>
+          <td>****</td>
+          <td>{{ user['role'] }}</td>
+          <td>
+            <a href="{{ staticCall('Router', 'route', ['users.edit', {'id' : user['id']}]) }}">Изменить</a>
+            <form class="d-inline-block"
+                  action="{{ staticCall('Router', 'route', ['users.destroy', {'id' : user['id']}]) }}" method="POST">
+              <input type="hidden" name='_method' value="DELETE">
+              <input class="btn" type="submit" name="delete" value="Удалить">
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+    </table>
+    <a href="{{ staticCall('Router', 'route', ['users.create']) }}">Добавить пользователя</a>
+  </div>
+
+{% endblock %}

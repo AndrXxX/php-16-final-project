@@ -1,0 +1,94 @@
+{% extends 'baseView.twig' %}
+
+{% block styles %}
+
+  <link rel="stylesheet" href="resources/css/reset.css"> <!-- CSS reset -->
+  <link rel="stylesheet" href="resources/css/style.css"> <!-- Resource style -->
+  <script src="resources/js/modernizr.js"></script> <!-- Modernizr -->
+{% endblock %}
+
+{% block body %}
+  <header>
+    <h1>FAQ: сервис вопросов и ответов</h1>
+  </header>
+
+  <section class="cd-faq">
+  <ul class="cd-faq-categories">
+    {% for category in categories %}
+      <li><a {% if loop.first == true %}class="selected"{% endif %}
+             href="#{{ category['name'] }}">{{ category['name'] }}</a></li>
+    {% endfor %}
+    <li><a href="#addQuestion">Задать вопрос</a></li>
+  </ul> <!-- cd-faq-categories -->
+
+  <div class="cd-faq-items">
+    {% for category, questions in categoriesWithQuestions %}
+      <ul id="{{ category }}" class="cd-faq-group">
+        <li class="cd-faq-title"><h2>{{ category }}</h2></li>
+        {% for question in questions %}
+          <li>
+            <a class="cd-faq-trigger text-left" href="#0">{{ question['name'] }}</a>
+            <div class="cd-faq-content text-left">
+              <p>{{ question['answer'] }}</p>
+            </div> <!-- cd-faq-content -->
+          </li>
+        {% endfor %}
+      </ul> <!-- cd-faq-group -->
+    {% endfor %}
+
+    <ul id="addQuestion" class="cd-faq-group text-center">
+      <li class="cd-faq-title"><h2>Задать вопрос</h2></li>
+      <li>
+        <form class="form" action="?#addQuestion" method="POST">
+          <div class="alert alert-info">
+            Если вы не нашли интересующий вас вопрос, вы можете задать его здесь.
+          </div>
+
+          {% for result in operationResult %}
+            <div class="alert alert-{{ result['typeResult'] }}">
+              {{ result['textResult'] }}
+            </div>
+          {% endfor %}
+
+          <div class="form-group row">
+            <div class="col-xs-4">
+              <label for="user_name">Имя</label>
+              <input type="text" class="form-control" name="user_name" id="user_name"
+                     value="{% if user_name is defined %}{{ user_name }}{% endif %}" required>
+            </div>
+
+            <div class="col-xs-4">
+              <label for="email">e-mail:</label>
+              <input type="email" class="form-control" name="email" id="email"
+                     value="{% if email is defined %}{{ email }}{% endif %}" required>
+            </div>
+
+            <div class="col-xs-4">
+              <label for="category_selector">Тема:</label>
+              <select class="form-control" name="categoryID" id="category_selector">
+                {% for category in categories %}
+                  <option
+                    {% if categoryID is defined %}
+                      {% if categoryID == category['id'] %} selected{% endif %}
+                    {% endif %}
+                    required value="{{ category['id'] }}">{{ category['name'] }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group row">
+            <label for="question">Вопрос</label>
+            <textarea class="form-control" rows="5" name="question"
+                      id="comment" required>{% if question is defined %}{{ question }}{% endif %}</textarea>
+          </div>
+          <div class="form-group">
+            <button type="submit" class="btn btn-default">Отправить</button>
+          </div>
+        </form>
+      </li>
+    </ul> <!-- cd-faq-group -->
+  </div>
+
+  <script src="resources/js/main.js"></script> <!-- Resource jQuery -->
+{% endblock %}

@@ -1,0 +1,13 @@
+<?php
+
+const APP_NAME = 'FAQ';
+
+const DB_CONNECTION = 'mysql';
+const DB_HOST = '127.0.0.1';
+const DB_PORT = '3306';
+const DB_DATABASE = 'global';
+const DB_USERNAME = 'user';
+const DB_PASSWORD = 'pass';
+
+const DEFAULT_CONTROLLER_NAME = 'main';
+const DEFAULT_ACTION_NAME = 'index';
