@@ -8,13 +8,15 @@ class Messages
     const INFO = 'alert-info';          // Информационные сообщения
     protected $message;
     protected $type;
+    protected $code;
 
 
-    public function __construct($message, $type, $save = true)
+    public function __construct($message, $type, $errorCode, $save = true)
     {
         $type = $this->checkType($type) ? $type : self::INFO;
         $this->message = $message;
         $this->type = $type;
+        $this->code = $errorCode;
     }
 
     /**
@@ -36,11 +38,24 @@ class Messages
         $errorsList = Session::Flash('errors');
         if (is_array($errorsList)) {
             foreach ($errorsList as $error) {
-                $errors[] = new Messages($error['message'], $error['type'], false);
+                $errors[] = new Messages($error['message'], $error['type'], $error['code'], false);
             }
         }
 
         return isset($errors) ? $errors : [];
+    }
+
+    /**
+     * Создает критическую ошибку и выполняет редирект
+     * @param $message
+     * @param $code
+     * @param string $type
+     */
+    public static function setCriticalErrorAndRedirect($message, $code, $type = self::DANGER)
+    {
+        $message = new Messages($message, $type, $code);
+        $message->save();
+        Router::redirect(Router::$base_route);
     }
 
     /**
@@ -52,7 +67,8 @@ class Messages
             'errors',
             [
                 'message' => $this->getMessage(),
-                'type' => $this->getType()
+                'type' => $this->getType(),
+                'code' => $this->getCode()
             ]);
     }
 
@@ -70,5 +86,13 @@ class Messages
     public function getType()
     {
         return $this->type;
+    }
+
+    /**
+     * @return int
+     */
+    public function getCode()
+    {
+        return $this->code;
     }
 }

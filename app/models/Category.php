@@ -1,48 +1,33 @@
 <?php
 require_once 'BaseModel.php';
+if (!class_exists('Question')) {
+    require_once 'Question.php';
+};
 
 class Category extends BaseModel
 {
     protected static $dbTableName = 'php_categories';
 
-    public static function all()
-    {
-        $tableName = self::$dbTableName;
-        $sql = "SELECT * FROM $tableName ORDER BY name;";
-        $statement = self::getDB()->prepare($sql);
-        $statement->execute();
-        return $statement->fetchAll(PDO::FETCH_ASSOC);
-    }
-
     /**
-     * Удаляет элемент из БД
+     * Удаляет категорию и все вопросы, которые были связаны с этой категорией
      * @param $id
      * @return bool
      */
-    public static function destroy($id) {
+    public static function destroy($id)
+    {
         $id = (int)$id;
-        if (is_int($id)) {
-            $tableName = self::$dbTableName;
-            $sql = "DELETE FROM $tableName WHERE id = :id;";
+        $parentResult = parent::destroy($id);
+
+        if (is_int($id) && $parentResult) {
+            // Удаляем вопросы, которые были связаны с категорией
+            $questionsTableName = Question::getDbTableName();
+            $sql = "DELETE FROM $questionsTableName WHERE category_id = :id;";
             $statement = self::getDB()->prepare($sql);
             $statement->bindParam('id', $id);
             $result = $statement->execute();
         } else {
             $result = false;
         }
-
-        if ($result) {
-            $message = new Messages(
-                'Категория была удалена',
-                Messages::SUCCESS
-            );
-        } else {
-            $message = new Messages(
-                'Категория не была удалена',
-                Messages::WARNING
-            );
-        }
-        $message->save();
         return $result;
     }
 
@@ -55,14 +40,15 @@ class Category extends BaseModel
      */
     public function setItem($operation, $name, $id = null)
     {
-        $tableName = self::$dbTableName;
-        $operationHint = $this->find($id) ? 'обновлена' : 'добавлена';
+        $tableName = static::$dbTableName;
         switch ($operation) {
             case 'update';
-                if (!$this->find($id)) {
+                $operationHint = 'обновлена';
+                if (!self::find($id)) {
                     $message = new Messages(
-                        'Категория не была обновлен - нет такой категории',
-                        Messages::WARNING
+                        "Категория не была $operationHint - нет такой категории",
+                        Messages::WARNING,
+                        404
                     );
                     $message->save();
                     return false;
@@ -72,10 +58,12 @@ class Category extends BaseModel
                         WHERE id = :id LIMIT 1";
                 break;
             default:
-                if ($this->getItem($name)) {
+                $operationHint = 'добавлена';
+                if (self::getItem($name)) {
                     $message = new Messages(
-                        'Категория не была добавлена - уже есть такая категория',
-                        Messages::WARNING
+                        "Категория не была $operationHint - уже есть такая категория",
+                        Messages::WARNING,
+                        400
                     );
                     $message->save();
                     return false;
@@ -84,9 +72,11 @@ class Category extends BaseModel
                         VALUES (:name, :userId, NOW(), NOW())";
                 break;
         }
-        $statement = $this->getDB()->prepare($sql);
+
+        $statement = self::getDB()->prepare($sql);
         $statement->bindParam('name', $name);
         $statement->bindParam('userId', $this->getCurrentUser('id'));
+
         if (!empty($id) && $operation === 'update') {
             $statement->bindParam('id', $id);
         }
@@ -95,12 +85,14 @@ class Category extends BaseModel
         if ($result) {
             $message = new Messages(
                 "Категория успешно $operationHint",
-                Messages::SUCCESS
+                Messages::SUCCESS,
+                200
             );
         } else {
             $message = new Messages(
-                "Категория не был $operationHint",
-                Messages::WARNING
+                "Категория не была $operationHint",
+                Messages::WARNING,
+                400
             );
         }
 
@@ -109,17 +101,29 @@ class Category extends BaseModel
     }
 
     /**
-     * Ищет пользователя по логину
-     * @param $name
-     * @return mixed|null
+     * Возвращает список категорий с количеством вопросов, неотвеченных и опубликованных
+     * @return array
      */
-    protected function getItem($name)
+    public function getCategoriesList()
     {
-        $sql = "SELECT * FROM php_users WHERE name = :name LIMIT 1";
-        $statement = $this->getDB()->prepare($sql);
-        $statement->bindParam('name', $name);
+        $tableName = self::$dbTableName;
+        $publishedQuestions = Question::QUESTION_STATE_PUBLISHED;
+        $waitAnswerQuestions = Question::QUESTION_STATE_WAIT_ANSWER;
+        $sql =
+            "SELECT cat.id, cat.name, cat.created_at, cat.updated_at, cat.user_id,
+                (SELECT count(*) FROM php_questions WHERE php_questions.category_id=cat.id) AS all_questions,
+                (SELECT count(*) FROM php_questions WHERE php_questions.category_id=cat.id AND php_questions.state = :published_questions) AS published_questions,
+                (SELECT count(*) FROM php_questions WHERE php_questions.category_id=cat.id AND php_questions.state = :wait_answer_questions) AS wait_answer_questions
+            FROM $tableName AS cat
+            GROUP BY cat.id
+            ORDER BY name;";
+
+        $statement = self::getDB()->prepare($sql);
+        $statement->bindParam('published_questions', $publishedQuestions);
+        $statement->bindParam('wait_answer_questions', $waitAnswerQuestions);
         $statement->execute();
-        return $statement->fetch(PDO::FETCH_ASSOC);
+
+        return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 }
 

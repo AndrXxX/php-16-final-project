@@ -4,7 +4,63 @@ require_once 'BaseController.php';
 class QuestionsController extends BaseController
 {
     protected $modelName = 'Question';
-    protected $template = 'clientQuestions.twig';
+    protected $clientTemplate = 'clientQuestions.twig';
+    protected $template = 'adminQuestions.twig';
+
+    /**
+     * Изменение/добавление вопроса
+     * @param $params
+     */
+    public function update($params)
+    {
+
+        $resultHint = Request::has('add') ? 'добавлен' : 'обновлен';
+        $operation = Request::has('add') ? 'create' : 'update';
+
+        if (!empty(getParam('author')) && !empty(getParam('author_email'))
+            && !empty(getParam('question')) && is_int((int)getParam('category_id'))) {
+            $itemParams['author'] = trim(getParam('author'));
+            $itemParams['author_email'] = trim(getParam('author_email'));
+            $itemParams['question'] = trim(getParam('question'));
+            $itemParams['category_id'] = (int)trim(getParam('category_id'));
+
+            if (!empty($this->getThisModel()->getUserName())) {
+                $itemParams['answer'] = trim(getParam('answer'));
+                $itemParams['state'] = trim(getParam('state'));
+                $itemParams['id'] = (int)trim(getParam('id'));
+            }
+
+            $result = $this->getThisModel()->setItem($operation, $itemParams);
+
+            if ($result) {
+                $message = new Messages(
+                    "Вопрос успешно $resultHint",
+                    Messages::SUCCESS,
+                    200
+                );
+            } else {
+                $message = new Messages(
+                    "Вопрос не был $resultHint",
+                    Messages::WARNING,
+                    400
+                );
+                foreach ($itemParams as $key => $itemParam) {
+                    $params[$key] = $itemParam;
+                }
+            }
+            $message->save();
+        }
+        $this->index($params);
+    }
+
+    /**
+     * @return Question
+     */
+    protected function getThisModel()
+    {
+        return $this->model;
+
+    }
 
     /**
      * @param $params
@@ -17,56 +73,24 @@ class QuestionsController extends BaseController
         if (!empty($userName)) {
             $params['user'] = $userName;
         }
-        $params['categories'] = $thisModel->getCategoriesList();
-        $params['categoriesWithQuestions'] = $thisModel->getQuestionsList($thisModel::QUESTION_STATE_PUBLISHED);
         $params['errors'] = Messages::all();
-        $this->render($this->template, $params);
-    }
 
-    /**
-     * @param $params
-     */
-    public function store($params)
-    {
-        if (!empty(getParam('user_name')) && !empty(getParam('email'))
-            && !empty(getParam('question')) && is_int((int)getParam('categoryID'))) {
-            $userName = trim(getParam('user_name'));
-            $email = trim(getParam('email'));
-            $question = trim(getParam('question'));
-            $categoryID = (int)trim(getParam('categoryID'));
-
-            $result = $this->getThisModel()->addQuestion($userName, $email, $question, $categoryID);
-            if ($result) {
-                //Session::Add('operationResult', array('typeResult' => 'hint', 'textResult' => 'Вопрос добавлен'));
-                $params['operationResult'][] = array('typeResult' => 'success', 'textResult' => 'Вопрос добавлен');
-            } else {
-                $params['operationResult'][] = array('typeResult' => 'danger', 'textResult' => 'Вопрос не был добавлен');
-                $params['user_name'] = $userName;
-                $params['email'] = $email;
-                $params['question'] = $question;
-                $params['categoryID'] = $categoryID;
-            }
+        if (Router::currentRouteName() === 'error') {
+            $this->render($this->errorTemplate, $params);
         }
 
-        $this->index($params);
-    }
+        $params['categories'] = $thisModel->getCategoriesList();
+        if (!empty($userName) and !(Router::currentRouteName() === 'index')
+            and !(Router::currentRouteName() === 'index_store')) {
+                $params['items'] = count($items) > 0 ? $items : $thisModel::all();
+                $params['states'] = $thisModel::getQuestionStateList();
+                $params['categoriesWithQuestions'] = $thisModel->getQuestionsList($thisModel::QUESTION_STATE_ALL);
+                $this->render($this->template, $params);
 
-    /**
-     * Изменение/добавление пользователя
-     * @param $params
-     */
-    public function update($params)
-    {
-
-    }
-
-    /**
-     * @return Question
-     */
-    protected function getThisModel()
-    {
-        return $this->model;
-
+        } else {
+            $params['categoriesWithQuestions'] = $thisModel->getQuestionsList($thisModel::QUESTION_STATE_PUBLISHED);
+            $this->render($this->clientTemplate, $params);
+        }
     }
 
 }

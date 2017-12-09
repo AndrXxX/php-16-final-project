@@ -5,12 +5,28 @@ abstract class BaseModel
     protected static $db = null; // подключение к базе данных
     protected static $dbTableName = ''; // название таблицы, с которой работает модель
     protected $user;
+    protected $requiredFields;
 
     public function __construct()
     {
         if (!empty(Session::Get('user'))) {
             $this->user = Session::Get('user');
         }
+    }
+
+    /**
+     * Ищет сущность по id
+     * @param $id
+     * @return mixed|null
+     */
+    public static function find($id)
+    {
+        $tableName = static::$dbTableName;
+        $sql = "SELECT * FROM $tableName WHERE id = :id";
+        $statement = self::getDB()->prepare($sql);
+        $statement->bindParam('id', $id);
+        $statement->execute();
+        return $statement->fetch(PDO::FETCH_ASSOC);
     }
 
     /**
@@ -23,6 +39,80 @@ abstract class BaseModel
             self::$db = DataBase::connect();
         }
         return self::$db;
+    }
+
+    /**
+     * Возвращает список всех пользователей
+     * @return array
+     */
+    public static function all()
+    {
+        $tableName = static::$dbTableName;
+        $sql = "SELECT * FROM $tableName ORDER BY name;";
+        $statement = self::getDB()->prepare($sql);
+        $statement->execute();
+        return $statement->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Возвращает название таблицы
+     * @return string
+     */
+    public static function getDbTableName()
+    {
+        return static::$dbTableName;
+    }
+
+    /**
+     * Удаляет сущность
+     * @param $id
+     * @return bool
+     */
+    public static function destroy($id)
+    {
+        $id = (int)$id;
+        if (is_int($id)) {
+            $tableName = static::$dbTableName;
+            $sql = "DELETE FROM $tableName WHERE id = :id;";
+            $statement = self::getDB()->prepare($sql);
+            $statement->bindParam('id', $id);
+            $result = $statement->execute();
+        } else {
+            $result = false;
+        }
+        return $result;
+    }
+
+    /**
+     * Ищет сущность по названию
+     * @param $name
+     * @return mixed|null
+     */
+    protected static function getItem($name)
+    {
+        $tableName = static::$dbTableName;
+        $sql = "SELECT * FROM $tableName WHERE name = :name LIMIT 1";
+        $statement = self::getDB()->prepare($sql);
+        $statement->bindParam('name', $name);
+        $statement->execute();
+        return $statement->fetch(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Проверяет, чтобы обязательные для модели параметры были не пусты
+     * @param $params
+     * @return bool
+     */
+    public function validate($params)
+    {
+        foreach ($params as $key => $param) {
+            foreach ($this->requiredFields as $field) {
+                if ($key === $field && empty($params[$key])) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     /**
@@ -55,19 +145,5 @@ abstract class BaseModel
     public function getHash($password)
     {
         return md5($password);
-    }
-
-    /**
-     * Ищет сущность по id
-     * @param $id
-     * @return mixed|null
-     */
-    protected function find($id)
-    {
-        $sql = "SELECT * FROM php_users WHERE id = :id";
-        $statement = $this->getDB()->prepare($sql);
-        $statement->bindParam('id', $id);
-        $statement->execute();
-        return $statement->fetch(PDO::FETCH_ASSOC);
     }
 }

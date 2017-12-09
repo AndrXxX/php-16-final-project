@@ -1,0 +1,22 @@
+{% extends 'baseView.twig' %}
+
+{% block styles %}
+  <link href="resources/css/styles.css" rel="stylesheet">
+{% endblock %}
+
+{% block body %}
+
+  <div class="container">
+    <a class="btn btn-link" href="{{ staticCall('Router', 'route', ['index']) }}">К списку вопросов и ответов</a>
+    {% for error in errors %}
+      {% if error.getCode() is defined %}
+        {% if error.getCode() == 404 %}
+          <h1 class="h1 center">404: Not found</h1>
+        {% elseif error.getCode() == 400 %}
+          <h1 class="h1 center">400: Bad request</h1>
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+  </div>
+
+{% endblock %}

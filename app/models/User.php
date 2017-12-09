@@ -5,42 +5,6 @@ class User extends BaseModel
 {
     protected static $dbTableName = 'php_users';
 
-    public static function all()
-    {
-        $tableName = self::$dbTableName;
-        $sql = "SELECT * FROM $tableName ORDER BY name;";
-        $statement = self::getDB()->prepare($sql);
-        $statement->execute();
-        return $statement->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    public static function destroy($id) {
-        $id = (int)$id;
-        if (is_int($id)) {
-            $tableName = self::$dbTableName;
-            $sql = "DELETE FROM $tableName WHERE id = :id;";
-            $statement = self::getDB()->prepare($sql);
-            $statement->bindParam('id', $id);
-            $result = $statement->execute();
-        } else {
-            $result = false;
-        }
-
-        if ($result) {
-            $message = new Messages(
-                'Пользователь был удален',
-                Messages::SUCCESS
-            );
-        } else {
-            $message = new Messages(
-                'Пользователь не был удален',
-                Messages::WARNING
-            );
-        }
-        $message->save();
-        return $result;
-    }
-
     /**
      * Добавляет/изменяет пользователя в БД (если пользователя с таким именем в базе нет)
      * @param $operation
@@ -52,13 +16,14 @@ class User extends BaseModel
      */
     public function setUser($operation, $login, $password, $id = null, $role = 'admin')
     {
-        $operationHint = $this->find($id) ? 'обновлен' : 'добавлен';
+        $operationHint = self::find($id) ? 'обновлен' : 'добавлен';
         switch ($operation) {
             case 'update';
-                if (!$this->find($id)) {
+                if (!self::find($id)) {
                     $message = new Messages(
                         'Пользователь не был обновлен - нет такого пользователя',
-                        Messages::WARNING
+                        Messages::WARNING,
+                        404
                     );
                     $message->save();
                     return false;
@@ -68,10 +33,11 @@ class User extends BaseModel
                         WHERE id = :id LIMIT 1";
                 break;
             default:
-                if ($this->getUser($login)) {
+                if (self::getItem($login)) {
                     $message = new Messages(
                         'Пользователь не был добавлен - уже есть такой логин',
-                        Messages::WARNING
+                        Messages::WARNING,
+                        400
                     );
                     $message->save();
                     return false;
@@ -80,10 +46,11 @@ class User extends BaseModel
                         VALUES (:login, :password, :role, NOW(), NOW())";
                 break;
         }
-        $statement = $this->getDB()->prepare($sql);
+        $statement = self::getDB()->prepare($sql);
         $statement->bindParam('login', $login);
         $statement->bindParam('password', $this->getHash($password));
         $statement->bindParam('role', $role);
+
         if (!empty($id) && $operation === 'update') {
             $statement->bindParam('id', $id);
         }
@@ -92,12 +59,14 @@ class User extends BaseModel
         if ($result) {
             $message = new Messages(
                 "Пользователь успешно $operationHint",
-                Messages::SUCCESS
+                Messages::SUCCESS,
+                200
             );
         } else {
             $message = new Messages(
                 "Пользователь не был $operationHint",
-                Messages::WARNING
+                Messages::WARNING,
+                400
             );
         }
 
@@ -116,7 +85,8 @@ class User extends BaseModel
         if (!$this->login($login, $password)) {
             $message = new Messages(
                 'Авторизация не удалась: не найден пользователь, неправильный логин или неправильный пароль',
-                Messages::WARNING
+                Messages::WARNING,
+                400
             );
             $message->save();
             return false;
@@ -132,7 +102,7 @@ class User extends BaseModel
      */
     protected function login($login, $password)
     {
-        $user = !empty($login) && !empty($password) ? $this->getUser($login) : null;
+        $user = !empty($login) && !empty($password) ? self::getItem($login) : null;
         /* Ищем пользователя по логину */
         if ($user !== null && $user['password'] === $this->getHash($password)) {
             Session::Put('user', $user);
@@ -141,20 +111,6 @@ class User extends BaseModel
             return true;
         }
         return false;
-    }
-
-    /**
-     * Ищет пользователя по логину
-     * @param $login
-     * @return mixed|null
-     */
-    protected function getUser($login)
-    {
-        $sql = "SELECT * FROM php_users WHERE name = :login LIMIT 1";
-        $statement = $this->getDB()->prepare($sql);
-        $statement->bindParam('login', $login);
-        $statement->execute();
-        return $statement->fetch(PDO::FETCH_ASSOC);
     }
 
     /**

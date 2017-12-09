@@ -6,86 +6,93 @@
 {% block body %}
   <h2>Список категорий</h2>
 
+  <div class="form-group">
+    <a class="btn btn-success" href="{{ staticCall('Router', 'route', ['categories.create']) }}">Добавить категорию</a>
+  </div>
+
   {% if action is defined %}
-    {% if action == 'edit' %}
-      <div class="table-responsive">
-        <form action="{{ staticCall('Router', 'route', ['categories.update', {'id' : id }]) }}" method="POST">
-          <table class="table table-bordered">
-            <tr>
-              <th colspan="5">Изменение категории</th>
-            </tr>
-            <tr>
-              <th>№п/п</th>
-              <th>Название</th>
-              <th>Действия</th>
-            </tr>
+
+    <div class="table-responsive">
+      <form
+        {% if action == 'edit' %}
+          action="{{ staticCall('Router', 'route', ['categories.update', {'id' : id }]) }}"
+        {% else %}
+          action="{{ staticCall('Router', 'route', ['categories.store']) }}"
+        {% endif %}
+        method="POST">
+        <table class="table table-bordered">
+          <tr>
+            <th colspan="3">{% if action == 'edit' %}Изменение{% else %}Добавление новой{% endif %} категории</th>
+          </tr>
+          <tr>
+            <th>№п/п</th>
+            <th>Название</th>
+            <th>Действия</th>
+          </tr>
+          {% if action == 'edit' %}
             {% for item in items %}
               {% if item['id'] == id %}
                 <tr>
                   <td>{{ loop.index }}</td>
                   <td><input type="text" name="name" value="{{ item['name'] }}" placeholder="Название"></td>
                   <td>
-                    <input type="hidden" name="id" value="{{ id }}">
                     <input type="hidden" name='_method' value="PUT">
-                    <input class="btn" type="submit" name="save" value="Сохранить">
+                    <input type="hidden" name="id" value="{{ id }}">
+                    <input class="btn btn-success" type="submit" name="save" value="Сохранить">
                   </td>
                 </tr>
               {% endif %}
             {% endfor %}
-          </table>
-        </form>
-      </div>
-
-    {% else %}
-
-      <div class="table-responsive">
-        <form action="{{ staticCall('Router', 'route', ['categories.index']) }}" method="POST">
-
-          <table class="table table-bordered">
-            <tr>
-              <th colspan="5">Добавление новой категории</th>
-            </tr>
-            <tr>
-              <th>№п/п</th>
-              <th>Название</th>
-              <th>Действия</th>
-            </tr>
+          {% else %}
             <tr>
               <td>{{ loop.index }}</td>
               <td><input type="text" name="name" value="" placeholder="Название"></td>
               <td>
-                <input class="btn" type="submit" name="add" value="Добавить">
+                <input class="btn btn-success" type="submit" name="add" value="Добавить">
               </td>
             </tr>
-          </table>
-        </form>
-      </div>
-
-    {% endif %}
+          {% endif %}
+        </table>
+      </form>
+    </div>
   {% endif %}
   <div class="table-responsive">
     <table class="table table-bordered">
       <tr>
         <th>№п/п</th>
         <th>Название</th>
+        <th>Всего вопросов</th>
+        <th>Опубликовано вопросов</th>
+        <th>Вопросов, ожидающих ответ</th>
+        <th>Создана</th>
+        <th>Обновлена</th>
         <th>Действия</th>
       </tr>
       {% for item in items %}
         <tr>
           <td>{{ loop.index }}</td>
           <td>{{ item['name'] }}</td>
+          <td><a
+              href="{{ staticCall('Router', 'route', ['questions.index']) }}#{{ item['name'] }}">{{ item['all_questions'] }}</a>
+          </td>
+          <td>{{ item['published_questions'] }}</td>
+          <td>{{ item['wait_answer_questions'] }}</td>
+          <td>{{ item['created_at'] }}</td>
+          <td>{{ item['updated_at'] }}</td>
           <td>
-            <a href="{{ staticCall('Router', 'route', ['categories.edit', {'id' : item['id']}]) }}">Изменить</a>
+            <a class="btn btn-primary"
+               href="{{ staticCall('Router', 'route', ['categories.edit', {'id' : item['id']}]) }}">Изменить</a>
             <form class="d-inline-block"
-                  action="{{ staticCall('Router', 'route', ['categories.destroy', {'id' : item['id']}]) }}" method="POST">
+                  action="{{ staticCall('Router', 'route', ['categories.destroy', {'id' : item['id']}]) }}"
+                  method="POST">
               <input type="hidden" name='_method' value="DELETE">
-              <input class="btn" type="submit" name="delete" value="Удалить">
+              <input class="btn btn-danger" type="submit" name="delete" value="Удалить"
+                     data-toggle="tooltip" title="При удалении категории также будут удалены все вопросы из нее!">
             </form>
           </td>
         </tr>
       {% endfor %}
     </table>
-    <a href="{{ staticCall('Router', 'route', ['categories.create']) }}">Добавить категорию</a>
   </div>
 
 {% endblock %}

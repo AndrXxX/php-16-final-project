@@ -2,6 +2,7 @@
 
 class Router
 {
+    public static $base_route = 'index';
     private static $dirController = 'app/controllers/';
     private static $urls = [];
     private static $curRouteName;
@@ -67,8 +68,6 @@ class Router
         self::add('GET', "/$resource/(\d+)/edit", "$controller@edit", "$resource.edit", ['id' => 1]);
         self::add('PUT', "/$resource/(\d+)", "$controller@update", "$resource.update", ['id' => 1]);
         self::add('DELETE', "/$resource/(\d+)", "$controller@destroy", "$resource.destroy", ['id' => 1]);
-
-        //'/question/update/id/(\d+)/', 'QuestionsController@update', ['id' => 1]
     }
 
     /**
@@ -78,34 +77,9 @@ class Router
      * @param string $routeName
      * @param array $params
      */
-    public static function post($url, $controllerAndAction, $routeName = '',  $params = [])
+    public static function post($url, $controllerAndAction, $routeName = '', $params = [])
     {
         self::add('POST', $url, $controllerAndAction, $routeName, $params);
-    }
-
-    /**
-     * Возвращает ссылку по имени маршрута
-     * @param $routeName // пример: photo.index для ресурсов или index
-     * @param array
-     * @return string
-     */
-    public static function route($routeName, $params = [])
-    {
-        if (isset(self::$urls)) {
-            foreach (self::$urls as $urlMethod) {
-                foreach ($urlMethod as $url => $urlData) {
-                    if ($urlData['routeName'] === $routeName) {
-                        if (count($params) > 0) {
-                            foreach ($params as $key => $param) {
-                                $url = str_replace('(\d+)', $param, $url);
-                            }
-                        }
-                        return '?' . $url;
-                    }
-                }
-            }
-        }
-        return '';
     }
 
     /**
@@ -132,8 +106,35 @@ class Router
      */
     public static function redirect($action)
     {
-        header('Location: ' . self::route($action));
+        if (!headers_sent()) {
+            header('Location: ' . self::route($action));
+        }
         die;
+    }
+
+    /**
+     * Возвращает ссылку по имени маршрута
+     * @param $routeName // пример: photo.index для ресурсов или index
+     * @param array
+     * @return string
+     */
+    public static function route($routeName, $params = [])
+    {
+        if (isset(self::$urls)) {
+            foreach (self::$urls as $urlMethod) {
+                foreach ($urlMethod as $url => $urlData) {
+                    if ($urlData['routeName'] === $routeName) {
+                        if (count($params) > 0) {
+                            foreach ($params as $key => $param) {
+                                $url = str_replace('(\d+)', $param, $url);
+                            }
+                        }
+                        return '?' . $url;
+                    }
+                }
+            }
+        }
+        return '';
     }
 
     /**
@@ -167,7 +168,7 @@ class Router
 
                     $controller = new $urlData['controller']();
                     if (method_exists($controller, $action)) {
-                            $controller->$action($params);
+                        $controller->$action($params);
                     } else {
                         throw new Exception("Метод $action не обнаружен в контроллере $controllerName", '404');
                     }

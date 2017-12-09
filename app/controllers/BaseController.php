@@ -6,6 +6,7 @@ abstract class BaseController
     protected $model = null;
     protected $modelName = 'BaseModel';
     protected $template;
+    protected $errorTemplate = 'errorView.twig';
 
     /**
      * BaseController constructor.
@@ -32,7 +33,13 @@ abstract class BaseController
         if (Request::has('add')) {
             $this->update($params);
         }
+
+        $this->index($params);
     }
+
+    abstract public function update($params);
+
+    abstract public function index($params, $items = []);
 
     /**
      * Отображения форму создания сущности
@@ -51,7 +58,22 @@ abstract class BaseController
     public function destroy($params)
     {
         $thisModelClass = $this->modelName;
-        $thisModelClass::destroy($params['id']);
+        $result = $thisModelClass::destroy($params['id']);
+
+        if ($result) {
+            $message = new Messages(
+                'Удаление успешно',
+                Messages::SUCCESS,
+                200
+            );
+        } else {
+            $message = new Messages(
+                'Ошибка удаления',
+                Messages::WARNING,
+                400
+            );
+        }
+        $message->save();
         $this->index($params);
     }
 
@@ -76,10 +98,6 @@ abstract class BaseController
         $this->index($params, $items);
     }
 
-    abstract public function update($params);
-
-    abstract public function index($params, $items = []);
-
     abstract protected function getThisModel();
 
     /**
@@ -102,12 +120,9 @@ abstract class BaseController
 
         try {
             echo $twig->render($template, $params);
-        } catch (Twig_Error_Loader $e) {
-            die('Twig_Error_Loader: ' . $e->getMessage() . '<br/>');
-        } catch (Twig_Error_Runtime $e) {
-            die('Twig_Error_Runtime: ' . $e->getMessage() . '<br/>');
-        } catch (Twig_Error_Syntax $e) {
-            die('Twig_Error_Syntax: ' . $e->getMessage() . '<br/>');
+            die;
+        } catch (Exception $e) {
+            Messages::setCriticalErrorAndRedirect($e->getMessage(), $e->getCode());
         }
     }
 

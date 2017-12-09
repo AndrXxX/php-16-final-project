@@ -6,21 +6,34 @@
 {% block body %}
   <h2>Список администраторов</h2>
 
+  <div class="form-group">
+    <a class="btn btn-success" href="{{ staticCall('Router', 'route', ['users.create']) }}">Добавить пользователя</a>
+  </div>
+
+
+
   {% if action is defined %}
-    {% if action == 'edit' %}
-      <div class="table-responsive">
-        <form action="{{ staticCall('Router', 'route', ['users.update', {'id' : id }]) }}" method="POST">
-          <table class="table table-bordered">
-            <tr>
-              <th colspan="5">Изменение пользователя</th>
-            </tr>
-            <tr>
-              <th>№п/п</th>
-              <th>Логин</th>
-              <th>Пароль</th>
-              <th>Права</th>
-              <th>Действия</th>
-            </tr>
+
+    <div class="table-responsive">
+      <form
+        {% if action == 'edit' %}
+          action="{{ staticCall('Router', 'route', ['users.update', {'id' : id }]) }}"
+        {% else %}
+          action="{{ staticCall('Router', 'route', ['users.store']) }}"
+        {% endif %}
+        method="POST">
+        <table class="table table-bordered">
+          <tr>
+            <th colspan="5">{% if action == 'edit' %}Изменение{% else %}Добавление нового{% endif %} пользователя</th>
+          </tr>
+          <tr>
+            <th>№п/п</th>
+            <th>Логин</th>
+            <th>Пароль</th>
+            <th>Права</th>
+            <th>Действия</th>
+          </tr>
+          {% if action == 'edit' %}
             {% for user in items %}
               {% if user['id'] == id %}
                 <tr>
@@ -29,47 +42,27 @@
                   <td><input type="password" name="password" value="" placeholder="Пароль"></td>
                   <td>{{ user['role'] }}</td>
                   <td>
-                    <input type="hidden" name="id" value="{{ id }}">
                     <input type="hidden" name='_method' value="PUT">
-                    <input class="btn" type="submit" name="save" value="Сохранить">
+                    <input type="hidden" name="id" value="{{ id }}">
+                    <input class="btn btn-success" type="submit" name="save" value="Сохранить">
                   </td>
                 </tr>
               {% endif %}
             {% endfor %}
-          </table>
-        </form>
-      </div>
-
-    {% else %}
-
-      <div class="table-responsive">
-        <form action="{{ staticCall('Router', 'route', ['users.index']) }}" method="POST">
-
-          <table class="table table-bordered">
-            <tr>
-              <th colspan="5">Добавление нового пользователя</th>
-            </tr>
-            <tr>
-              <th>№п/п</th>
-              <th>Логин</th>
-              <th>Пароль</th>
-              <th>Права</th>
-              <th>Действия</th>
-            </tr>
+          {% else %}
             <tr>
               <td>{{ loop.index }}</td>
               <td><input type="text" name="name" value="" placeholder="Логин"></td>
               <td><input type="password" name="password" value="" placeholder="Пароль"></td>
               <td>admin</td>
               <td>
-                <input class="btn" type="submit" name="add" value="Добавить">
+                <input class="btn btn-success" type="submit" name="add" value="Добавить">
               </td>
             </tr>
-          </table>
-        </form>
-      </div>
-
-    {% endif %}
+          {% endif %}
+        </table>
+      </form>
+    </div>
   {% endif %}
   <div class="table-responsive">
     <table class="table table-bordered">
@@ -87,17 +80,16 @@
           <td>****</td>
           <td>{{ user['role'] }}</td>
           <td>
-            <a href="{{ staticCall('Router', 'route', ['users.edit', {'id' : user['id']}]) }}">Изменить</a>
+            <a class="btn btn-primary" href="{{ staticCall('Router', 'route', ['users.edit', {'id' : user['id']}]) }}">Изменить</a>
             <form class="d-inline-block"
                   action="{{ staticCall('Router', 'route', ['users.destroy', {'id' : user['id']}]) }}" method="POST">
               <input type="hidden" name='_method' value="DELETE">
-              <input class="btn" type="submit" name="delete" value="Удалить">
+              <input class="btn btn-danger" type="submit" name="delete" value="Удалить">
             </form>
           </td>
         </tr>
       {% endfor %}
     </table>
-    <a href="{{ staticCall('Router', 'route', ['users.create']) }}">Добавить пользователя</a>
   </div>
 
 {% endblock %}

@@ -8,3 +8,5 @@ app/controllers/temp\.php
 config\.php
 
 Доп\.материалы/
+
+createDB\.php
