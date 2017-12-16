@@ -1,5 +1,4 @@
 <?php
-require_once 'BaseController.php';
 
 class UsersController extends BaseController
 {
@@ -14,6 +13,7 @@ class UsersController extends BaseController
      */
     public function update($params)
     {
+        $this->checkLogin(); // если не залогинен - переадресуем на страницу входа
         $thisModel = $this->getThisModel();
         $operation = !empty($params['id']) ? 'update' : 'create';
         $login = Request::get('name');
@@ -38,16 +38,20 @@ class UsersController extends BaseController
      */
     public function index($params, $items = [])
     {
-
+        $this->checkLogin(); // если не залогинен - переадресуем на страницу входа
         $thisModel = $this->getThisModel();
         if (empty($thisModel->getUserName())) {
             // если не залогинен
             Router::redirect('login');
         }
 
+        $params = array_merge($params, $this->getNeedParams()); // добавляем требуемые для меню параметры
         $params['user'] = $thisModel->getUserName();
         $params['items'] = count($items) > 0 ? $items : $thisModel::all();
-        $params['errors'] = Messages::all();
+        if (!empty($params['id'])) {
+            $params['editItem'] = $thisModel::find($params['id']);
+        }
+        $params['errors'] = Message::all();
         $this->render($this->template, $params);
     }
 
@@ -81,7 +85,7 @@ class UsersController extends BaseController
         }
         $params['authLogin'] = Session::Get('authLogin');
         $params['remember_me'] = Session::Get('remember_me');
-        $params['errors'] = Messages::all();
+        $params['errors'] = Message::all();
         $this->render($this->loginTemplate, $params);
     }
 

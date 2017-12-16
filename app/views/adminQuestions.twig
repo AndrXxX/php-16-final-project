@@ -11,21 +11,94 @@
   </div>
 
   {% if action is defined %}
-    <div class="table-responsive">
-      <form
-        {% if action == 'edit' %}
-          action="{{ staticCall('Router', 'route', ['questions.update', {'id' : id }]) }}"
-        {% else %}
-          action="{{ staticCall('Router', 'route', ['questions.store']) }}"
-        {% endif %}
-        method="POST">
+    <form class="form-horizontal form-container"
+      {% if action == 'edit' %}
+        action="{{ staticCall('Router', 'route', ['questions.update', {'id' : id }]) }}"
+      {% else %}
+        action="{{ staticCall('Router', 'route', ['questions.store']) }}"
+      {% endif %}
+          method="POST">
+      <div class="form-group">
+        <h3>{% if action == 'edit' %}Изменение{% else %}Добавление нового{% endif %} вопроса</h3>
+      </div>
+      <div class="form-group">
+        <label for="category_selector" class="col-xs-2 control-label">Категория:</label>
+        <div class="col-xs-10">
+          <select class="form-control def-width" name="category_id" id="category_selector">
+            {% for category in categories %}
+              <option{% if editItem is defined and editItem['category_id'] == category['id'] %} selected{% endif %}
+                value="{{ category['id'] }}">{{ category['name'] }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="question" class="col-xs-2 control-label">Вопрос:</label>
+        <div class="col-xs-10">
+          <textarea class="form-control" rows="5" name="question" id="question" placeholder="Вопрос"
+                    required>{% if editItem['name'] is defined %}{{ editItem['name'] }}{% endif %}</textarea>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="author" class="col-xs-2 control-label">Автор:</label>
+        <div class="col-xs-10">
+          <input class="form-control" type="text" name="author" id="author" placeholder="Автор"
+                 value="{% if editItem['author'] is defined %}{{ editItem['author'] }}{% endif %}" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="author_email" class="col-xs-2 control-label">E-mail автора:</label>
+        <div class="col-xs-10">
+          <input class="form-control" type="email" name="author_email" id="author_email" placeholder="E-mail автора"
+                 value="{% if editItem['author_email'] is defined %}{{ editItem['author_email'] }}{% endif %}" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="answer" class="col-xs-2 control-label">Ответ:</label>
+        <div class="col-xs-10">
+          <textarea class="form-control" rows="5" name="answer" id="answer" placeholder="Ответ на вопрос"
+          >{% if editItem['answer'] is defined %}{{ editItem['answer'] }}{% endif %}</textarea>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="state_selector" class="col-xs-2 control-label">Состояние:</label>
+        <div class="col-xs-10">
+          <select class="form-control def-width" name="state" id="state_selector">
+            {% for state in states %}
+              <option
+                {% if editItem['state'] is defined %}
+                  {% if state == editItem['state'] %} selected{% endif %}
+                {% else %}
+                  {% if loop.first %} selected{% endif %}
+                {% endif %}
+                value="{{ state }}">{{ state }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="col-xs-offset-2 col-xs-10">
+          {% if action == 'edit' %}
+            <input type="hidden" name='_method' value="PUT">
+            <input type="hidden" name="id" value="{{ editItem['id'] }}">
+            <input class="btn btn-success" type="submit" name="save" value="Сохранить">
+          {% else %}
+            <input class="btn btn-success" type="submit" name="add" value="Добавить">
+          {% endif %}
+        </div>
+      </div>
+    </form>
+  {% endif %}
+
+  {% for category, questions in categoriesWithQuestions %}
+    {% if questions|length > 0 %}
+      <div class="table-responsive">
+        <h3 id="{{ category }}">{{ category }}</h3>
         <table class="table table-bordered">
           <tr>
-            <th colspan="11">{% if action == 'edit' %}Изменение{% else %}Добавление нового{% endif %} вопроса</th>
-          </tr>
-          <tr>
             <th>№п/п</th>
-            <th>Категория</th>
             <th>Вопрос</th>
             <th>Автор</th>
             <th>E-mail автора</th>
@@ -37,156 +110,44 @@
             <th>Действия</th>
           </tr>
 
-          <h3>{{ categoriesWithQuestions[id] }}</h3>
-
-          {% if action == 'edit' %}
-            {% for category, questions in categoriesWithQuestions %}
-              {% for question in questions %}
-                {% if question['id'] == id %}
-                  <tr>
-                    <td>{{ loop.index }}</td>
-                    <td>
-                      <select class="form-control" name="category_id" id="category_selector">
-                        {% for category in categories %}
-                          <option{% if question['category_id'] == category['id'] %} selected{% endif %}
-                            value="{{ category['id'] }}">{{ category['name'] }}</option>
-                        {% endfor %}
-                      </select>
-                    </td>
-                    <td>
-                      <textarea class="form-control" rows="5" name="question"
-                                required>{% if question['name'] is defined %}{{ question['name'] }}{% endif %}</textarea>
-                    </td>
-                    <td>
-                      <input class="form-control" type="text" name="author"
-                             value="{% if question['author'] is defined %}{{ question['author'] }}{% endif %}">
-                    </td>
-                    <td>
-                      <input class="form-control" type="text" name="author_email"
-                             value="{% if question['author_email'] is defined %}{{ question['author_email'] }}{% endif %}">
-                    </td>
-                    <td>
-                      <textarea class="form-control" rows="5" name="answer"
-                      >{% if question['answer'] is defined %}{{ question['answer'] }}{% endif %}</textarea>
-                    </td>
-                    <td>
-                      <select class="form-control" name="state">
-                        {% for state in states %}
-                          <option{% if state == question['state'] %} selected{% endif %}
-                            value="{{ state }}">{{ state }}
-                          </option>
-                        {% endfor %}
-                      </select>
-                    </td>
-                    <td>{% if question['user_login'] is defined %}{{ question['user_login'] }}{% endif %}</td>
-                    <td>{{ question['created_at'] }}</td>
-                    <td>{{ question['updated_at'] }}</td>
-                    <td>
-                      <input type="hidden" name='_method' value="PUT">
-                      <input type="hidden" name="id" value="{{ question['id'] }}">
-                      <input class="btn btn-success" type="submit" name="save" value="Сохранить">
-                    </td>
-                  </tr>
-                {% endif %}
-              {% endfor %}
-            {% endfor %}
-          {% else %}
+          {% for question in questions %}
             <tr>
               <td>{{ loop.index }}</td>
-              <td>
-                <select class="form-control" name="category_id" id="category_selector">
-                  {% for category in categories %}
-                    <option{% if loop.first %} selected{% endif %}
-                      value="{{ category['id'] }}">{{ category['name'] }}</option>
-                  {% endfor %}
-                </select>
-              </td>
-              <td>
-                <textarea class="form-control" rows="5" name="question" required></textarea>
-              </td>
-              <td>
-                <input class="form-control" type="text" name="author" value="">
-              </td>
-              <td>
-                <input class="form-control" type="text" name="author_email" value="">
-              </td>
-              <td>
-                <textarea class="form-control" rows="5" name="answer"></textarea>
-              </td>
-              <td>
-                <select class="form-control" name="state">
-                  {% for state in states %}
-                    <option{% if loop.first %} selected{% endif %} value="{{ state }}">{{ state }}</option>
-                  {% endfor %}
-                </select>
-              </td>
-              <td></td>
+              <td>{{ question['name'] }}</td>
+              <td>{{ question['author'] }}</td>
+              <td>{{ question['author_email'] }}</td>
+              {% if question['answer'] is empty %}
+                <td class="bg-danger">не указан</td>
+              {% else %}
+                <td class="bg-success">указан</td>
+              {% endif %}
+              <td
+                {% if question['state'] == 'скрыт' %}
+                  class="bg-danger"
+                {% elseif question['state'] == 'опубликован' %}
+                  class="bg-success"
+                {% else %}
+                  class="bg-info"
+                {% endif %}
+              >{{ question['state'] }}</td>
+              <td>{{ question['user_login'] }}</td>
               <td>{{ question['created_at'] }}</td>
               <td>{{ question['updated_at'] }}</td>
               <td>
-                <input class="btn btn-success" type="submit" name="add" value="Добавить">
+                <a class="btn btn-primary"
+                   href="{{ staticCall('Router', 'route', ['questions.edit', {'id' : question['id']}]) }}">Изменить</a>
+                <form class="d-inline-block"
+                      action="{{ staticCall('Router', 'route', ['questions.destroy', {'id' : question['id']}]) }}"
+                      method="POST">
+                  <input type="hidden" name='_method' value="DELETE">
+                  <input class="btn btn-danger" type="submit" name="delete" value="Удалить">
+                </form>
               </td>
             </tr>
-          {% endif %}
+          {% endfor %}
         </table>
-      </form>
-    </div>
-  {% endif %}
-
-  {% for category, questions in categoriesWithQuestions %}
-    <div class="table-responsive">
-      <h3 id="{{ category }}">{{ category }}</h3>
-      <table class="table table-bordered">
-        <tr>
-          <th>№п/п</th>
-          <th>Вопрос</th>
-          <th>Автор</th>
-          <th>E-mail автора</th>
-          <th>Ответ</th>
-          <th>Состояние</th>
-          <th>Логин</th>
-          <th>Создан</th>
-          <th>Обновлен</th>
-          <th>Действия</th>
-        </tr>
-
-        {% for question in questions %}
-          <tr>
-            <td>{{ loop.index }}</td>
-            <td>{{ question['name'] }}</td>
-            <td>{{ question['author'] }}</td>
-            <td>{{ question['author_email'] }}</td>
-            {% if question['answer'] is empty %}
-              <td class="bg-danger">не указан</td>
-            {% else %}
-              <td class="bg-success">указан</td>
-            {% endif %}
-            <td
-              {% if question['state'] == 'скрыт' %}
-                class="bg-danger"
-              {% elseif question['state'] == 'опубликован' %}
-                class="bg-success"
-              {% else %}
-                class="bg-info"
-              {% endif %}
-            >{{ question['state'] }}</td>
-            <td>{{ question['user_login'] }}</td>
-            <td>{{ question['created_at'] }}</td>
-            <td>{{ question['updated_at'] }}</td>
-            <td>
-              <a class="btn btn-primary"
-                 href="{{ staticCall('Router', 'route', ['questions.edit', {'id' : question['id']}]) }}">Изменить</a>
-              <form class="d-inline-block"
-                    action="{{ staticCall('Router', 'route', ['questions.destroy', {'id' : question['id']}]) }}"
-                    method="POST">
-                <input type="hidden" name='_method' value="DELETE">
-                <input class="btn btn-danger" type="submit" name="delete" value="Удалить">
-              </form>
-            </td>
-          </tr>
-        {% endfor %}
-      </table>
-    </div>
+      </div>
+    {% endif %}
   {% endfor %}
 
 {% endblock %}

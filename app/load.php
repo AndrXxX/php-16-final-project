@@ -3,14 +3,14 @@
 session_start();
 
 require_once 'core/functions.php';
-require_once 'core/Session.php';
-require_once 'core/Router.php';
-require_once 'core/DataBase.php';
-require_once 'core/Request.php';
-require_once 'core/Messages.php';
+spl_autoload_register('autoloader');
 
-Router::$base_route = 'error';
+Logger::$PATH = PATH_TO_LOG; // Установка пути к папке с логами
+$logger = new Logger('actions');
 
+Router::$base_route = 'error'; // Название маршрута для отображения критических ошибок
+
+/* --- Регистрация маршрутов --- */
 Router::get('/', 'QuestionsController@index', 'index');
 Router::post('/', 'QuestionsController@store', 'index_store');
 
@@ -21,8 +21,12 @@ Router::get('/logout/', 'UsersController@getLogout', 'logout');
 Router::resource('users', 'UsersController');
 Router::resource('questions', 'QuestionsController');
 Router::resource('categories', 'CategoriesController');
+Router::get("/questions/state/(\d+)", "QuestionsController@index", "quest_by_state", ['state' => 1]);
+Router::get("/questions/category/(\d+)", "QuestionsController@index", "quest_by_category", ['category' => 1]);
+
 
 Router::get('/error/', 'QuestionsController@index', 'error');
+/* --- Регистрация маршрутов --- */
 
 $uriQuery = parse_url($_SERVER['REQUEST_URI'], PHP_URL_QUERY);
 $uri = is_null($uriQuery) ? '/' : $uriQuery;
@@ -31,7 +35,7 @@ try {
     Router::run($uri);
     Session::Put('lastRouteName', Router::currentRouteName());
 } catch (Exception $e) {
-    Messages::setCriticalErrorAndRedirect($e->getMessage(), $e->getCode());
+    Message::setCriticalErrorAndRedirect($e->getMessage(), $e->getCode());
 }
 
 

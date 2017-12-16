@@ -7,6 +7,7 @@ class Router
     private static $urls = [];
     private static $curRouteName;
     private static $curRouteAction;
+    private static $curRouteUrl = '';
 
     /**
      * Добавление роутеров с методом GET
@@ -101,6 +102,15 @@ class Router
     }
 
     /**
+     * Возвращает текущий юрл
+     * @return string
+     */
+    public static function currentRouteUrl()
+    {
+        return !empty(self::$curRouteUrl) ? self::$curRouteUrl : '';
+    }
+
+    /**
      * Отправляет переадресацию на указанную страницу
      * @param $action
      */
@@ -158,6 +168,7 @@ class Router
                     $action = $urlData['action'];
                     self::$curRouteName = $urlData['routeName'];
                     self::$curRouteAction = $urlData['action'];
+                    self::$curRouteUrl = $currentUrl;
                     $controllerFile = self::$dirController . $controllerName . '.php';
 
                     if (is_file($controllerFile)) {

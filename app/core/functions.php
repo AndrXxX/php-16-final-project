@@ -32,3 +32,21 @@ function staticCall($class, $function, $args = array())
         return call_user_func_array(array($class, $function), $args);
     return null;
 }
+
+/**
+ * Загрузчик классов
+ */
+function autoloader($className)
+{
+    $dirs = [
+        'app/controllers/',
+        'app/core/',
+        'app/models/'
+    ];
+    foreach ($dirs as $dir) {
+        $file = $dir . $className. '.php';
+        if (file_exists($file)) {
+            require_once $file;
+        }
+    }
+}

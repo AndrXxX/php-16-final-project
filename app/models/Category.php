@@ -1,8 +1,4 @@
 <?php
-require_once 'BaseModel.php';
-if (!class_exists('Question')) {
-    require_once 'Question.php';
-};
 
 class Category extends BaseModel
 {
@@ -45,11 +41,8 @@ class Category extends BaseModel
             case 'update';
                 $operationHint = 'обновлена';
                 if (!self::find($id)) {
-                    $message = new Messages(
-                        "Категория не была $operationHint - нет такой категории",
-                        Messages::WARNING,
-                        404
-                    );
+                    $message = new Message("Категория не была $operationHint - нет такой категории",
+                        Message::WARNING,404);
                     $message->save();
                     return false;
                 }
@@ -60,11 +53,8 @@ class Category extends BaseModel
             default:
                 $operationHint = 'добавлена';
                 if (self::getItem($name)) {
-                    $message = new Messages(
-                        "Категория не была $operationHint - уже есть такая категория",
-                        Messages::WARNING,
-                        400
-                    );
+                    $message = new Message("Категория не была $operationHint - уже есть такая категория",
+                        Message::WARNING,400);
                     $message->save();
                     return false;
                 }
@@ -83,15 +73,15 @@ class Category extends BaseModel
         $result = $statement->execute();
 
         if ($result) {
-            $message = new Messages(
+            $message = new Message(
                 "Категория успешно $operationHint",
-                Messages::SUCCESS,
+                Message::SUCCESS,
                 200
             );
         } else {
-            $message = new Messages(
+            $message = new Message(
                 "Категория не была $operationHint",
-                Messages::WARNING,
+                Message::WARNING,
                 400
             );
         }
@@ -104,16 +94,18 @@ class Category extends BaseModel
      * Возвращает список категорий с количеством вопросов, неотвеченных и опубликованных
      * @return array
      */
-    public function getCategoriesList()
+    public static function getCategoriesList()
     {
         $tableName = self::$dbTableName;
         $publishedQuestions = Question::QUESTION_STATE_PUBLISHED;
         $waitAnswerQuestions = Question::QUESTION_STATE_WAIT_ANSWER;
+        $hiddenQuestions = Question::QUESTION_STATE_HIDDEN;
         $sql =
             "SELECT cat.id, cat.name, cat.created_at, cat.updated_at, cat.user_id,
                 (SELECT count(*) FROM php_questions WHERE php_questions.category_id=cat.id) AS all_questions,
                 (SELECT count(*) FROM php_questions WHERE php_questions.category_id=cat.id AND php_questions.state = :published_questions) AS published_questions,
-                (SELECT count(*) FROM php_questions WHERE php_questions.category_id=cat.id AND php_questions.state = :wait_answer_questions) AS wait_answer_questions
+                (SELECT count(*) FROM php_questions WHERE php_questions.category_id=cat.id AND php_questions.state = :wait_answer_questions) AS wait_answer_questions,
+                (SELECT count(*) FROM php_questions WHERE php_questions.category_id=cat.id AND php_questions.state = :hidden_questions) AS hidden_questions
             FROM $tableName AS cat
             GROUP BY cat.id
             ORDER BY name;";
@@ -121,6 +113,7 @@ class Category extends BaseModel
         $statement = self::getDB()->prepare($sql);
         $statement->bindParam('published_questions', $publishedQuestions);
         $statement->bindParam('wait_answer_questions', $waitAnswerQuestions);
+        $statement->bindParam('hidden_questions', $hiddenQuestions);
         $statement->execute();
 
         return $statement->fetchAll(PDO::FETCH_ASSOC);

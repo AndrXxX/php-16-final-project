@@ -11,3 +11,15 @@ body {
   font-size: 14px;
   line-height: 1.42857143;
 }
+
+.form-container {
+  max-width: 1000px;
+}
+
+.def-width {
+  width: initial;
+}
+
+.wdth100 {
+  width: 100%;
+}

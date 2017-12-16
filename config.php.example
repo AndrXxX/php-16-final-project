@@ -11,3 +11,5 @@ const DB_PASSWORD = 'pass';
 
 const DEFAULT_CONTROLLER_NAME = 'main';
 const DEFAULT_ACTION_NAME = 'index';
+
+const PATH_TO_LOG = 'app/storage/';

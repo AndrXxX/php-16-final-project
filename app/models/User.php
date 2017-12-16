@@ -1,5 +1,4 @@
 <?php
-require_once 'BaseModel.php';
 
 class User extends BaseModel
 {
@@ -20,9 +19,9 @@ class User extends BaseModel
         switch ($operation) {
             case 'update';
                 if (!self::find($id)) {
-                    $message = new Messages(
+                    $message = new Message(
                         'Пользователь не был обновлен - нет такого пользователя',
-                        Messages::WARNING,
+                        Message::WARNING,
                         404
                     );
                     $message->save();
@@ -34,9 +33,9 @@ class User extends BaseModel
                 break;
             default:
                 if (self::getItem($login)) {
-                    $message = new Messages(
+                    $message = new Message(
                         'Пользователь не был добавлен - уже есть такой логин',
-                        Messages::WARNING,
+                        Message::WARNING,
                         400
                     );
                     $message->save();
@@ -57,15 +56,15 @@ class User extends BaseModel
         $result = $statement->execute();
 
         if ($result) {
-            $message = new Messages(
+            $message = new Message(
                 "Пользователь успешно $operationHint",
-                Messages::SUCCESS,
+                Message::SUCCESS,
                 200
             );
         } else {
-            $message = new Messages(
+            $message = new Message(
                 "Пользователь не был $operationHint",
-                Messages::WARNING,
+                Message::WARNING,
                 400
             );
         }
@@ -83,9 +82,9 @@ class User extends BaseModel
     public function checkForLogin($login, $password)
     {
         if (!$this->login($login, $password)) {
-            $message = new Messages(
+            $message = new Message(
                 'Авторизация не удалась: не найден пользователь, неправильный логин или неправильный пароль',
-                Messages::WARNING,
+                Message::WARNING,
                 400
             );
             $message->save();

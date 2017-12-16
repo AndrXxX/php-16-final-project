@@ -11,72 +11,77 @@
   </div>
 
   {% if action is defined %}
-
-    <div class="table-responsive">
-      <form
-        {% if action == 'edit' %}
-          action="{{ staticCall('Router', 'route', ['categories.update', {'id' : id }]) }}"
-        {% else %}
-          action="{{ staticCall('Router', 'route', ['categories.store']) }}"
-        {% endif %}
-        method="POST">
-        <table class="table table-bordered">
-          <tr>
-            <th colspan="3">{% if action == 'edit' %}Изменение{% else %}Добавление новой{% endif %} категории</th>
-          </tr>
-          <tr>
-            <th>№п/п</th>
-            <th>Название</th>
-            <th>Действия</th>
-          </tr>
+    <form class="form-horizontal form-container"
+      {% if action == 'edit' %}
+        action="{{ staticCall('Router', 'route', ['categories.update', {'id' : id }]) }}"
+      {% else %}
+        action="{{ staticCall('Router', 'route', ['categories.store']) }}"
+      {% endif %}
+          method="POST">
+      <div class="form-group">
+        <h3>{% if action == 'edit' %}Изменение{% else %}Добавление новой{% endif %} категории</h3>
+      </div>
+      <div class="form-group">
+        <label for="name" class="col-xs-2 control-label">Название:</label>
+        <div class="col-xs-10">
+          <input class="form-control" type="text" name="name" id="name" placeholder="Название"
+                 value="{% if editItem['name'] is defined %}{{ editItem['name'] }}{% endif %}" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="col-xs-offset-2 col-xs-10">
           {% if action == 'edit' %}
-            {% for item in items %}
-              {% if item['id'] == id %}
-                <tr>
-                  <td>{{ loop.index }}</td>
-                  <td><input type="text" name="name" value="{{ item['name'] }}" placeholder="Название"></td>
-                  <td>
-                    <input type="hidden" name='_method' value="PUT">
-                    <input type="hidden" name="id" value="{{ id }}">
-                    <input class="btn btn-success" type="submit" name="save" value="Сохранить">
-                  </td>
-                </tr>
-              {% endif %}
-            {% endfor %}
+            <input type="hidden" name='_method' value="PUT">
+            <input type="hidden" name="id" value="{{ editItem['id'] }}">
+            <input class="btn btn-success" type="submit" name="save" value="Сохранить">
           {% else %}
-            <tr>
-              <td>{{ loop.index }}</td>
-              <td><input type="text" name="name" value="" placeholder="Название"></td>
-              <td>
-                <input class="btn btn-success" type="submit" name="add" value="Добавить">
-              </td>
-            </tr>
+            <input class="btn btn-success" type="submit" name="add" value="Добавить">
           {% endif %}
-        </table>
-      </form>
-    </div>
+        </div>
+      </div>
+    </form>
   {% endif %}
+
   <div class="table-responsive">
     <table class="table table-bordered">
       <tr>
-        <th>№п/п</th>
-        <th>Название</th>
-        <th>Всего вопросов</th>
-        <th>Опубликовано вопросов</th>
-        <th>Вопросов, ожидающих ответ</th>
-        <th>Создана</th>
-        <th>Обновлена</th>
-        <th>Действия</th>
+        <th rowspan="2">№п/п</th>
+        <th rowspan="2">Название</th>
+        <th colspan="4">Вопросов в категории</th>
+        <th rowspan="2">Создана</th>
+        <th rowspan="2">Обновлена</th>
+        <th rowspan="2">Действия</th>
+      </tr>
+      <tr>
+        <th>Всего</th>
+        <th>Опубликовано</th>
+        <th>Ожидающих ответ</th>
+        <th>Скрыто</th>
       </tr>
       {% for item in items %}
         <tr>
           <td>{{ loop.index }}</td>
           <td>{{ item['name'] }}</td>
-          <td><a
-              href="{{ staticCall('Router', 'route', ['questions.index']) }}#{{ item['name'] }}">{{ item['all_questions'] }}</a>
+          <td>
+            <a href="{{ staticCall('Router', 'route', ['quest_by_category', {'category' : item['id'] }]) }}">
+              <span class="badge">{{ item['all_questions'] }}</span>
+            </a>
           </td>
-          <td>{{ item['published_questions'] }}</td>
-          <td>{{ item['wait_answer_questions'] }}</td>
+          <td>
+            <a href="{{ staticCall('Router', 'route', ['quest_by_category', {'category' : item['id'] }]) }}">
+              <span class="badge">{{ item['published_questions'] }}</span>
+            </a>
+          </td>
+          <td>
+            <a href="{{ staticCall('Router', 'route', ['quest_by_category', {'category' : item['id'] }]) }}">
+              <span class="badge">{{ item['wait_answer_questions'] }}</span>
+            </a>
+          </td>
+          <td>
+            <a href="{{ staticCall('Router', 'route', ['quest_by_category', {'category' : item['id'] }]) }}">
+              <span class="badge">{{ item['hidden_questions'] }}</span>
+            </a>
+          </td>
           <td>{{ item['created_at'] }}</td>
           <td>{{ item['updated_at'] }}</td>
           <td>

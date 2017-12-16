@@ -1,6 +1,6 @@
 <?php
 
-class Messages
+class Message
 {
     const WARNING = 'alert-warning';    // Предупреждающее сообщение
     const DANGER = 'alert-danger';      // Сообщение об ошибке
@@ -31,14 +31,14 @@ class Messages
 
     /**
      * Возвращает список ошибок в виде объектов
-     * @return Messages[]
+     * @return Message[]
      */
     public static function all()
     {
         $errorsList = Session::Flash('errors');
         if (is_array($errorsList)) {
             foreach ($errorsList as $error) {
-                $errors[] = new Messages($error['message'], $error['type'], $error['code'], false);
+                $errors[] = new Message($error['message'], $error['type'], $error['code'], false);
             }
         }
 
@@ -53,7 +53,7 @@ class Messages
      */
     public static function setCriticalErrorAndRedirect($message, $code, $type = self::DANGER)
     {
-        $message = new Messages($message, $type, $code);
+        $message = new Message($message, $type, $code);
         $message->save();
         Router::redirect(Router::$base_route);
     }
