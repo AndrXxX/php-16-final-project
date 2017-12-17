@@ -35,6 +35,7 @@ function staticCall($class, $function, $args = array())
 
 /**
  * Загрузчик классов
+ * @param $className
  */
 function autoloader($className)
 {
@@ -45,7 +46,7 @@ function autoloader($className)
     ];
     foreach ($dirs as $dir) {
         $file = $dir . $className. '.php';
-        if (file_exists($file)) {
+        if (file_exists($file) and !class_exists($className)) {
             require_once $file;
         }
     }

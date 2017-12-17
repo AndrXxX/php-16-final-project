@@ -24,7 +24,9 @@ Router::resource('categories', 'CategoriesController');
 Router::get("/questions/state/(\d+)", "QuestionsController@index", "quest_by_state", ['state' => 1]);
 Router::get("/questions/category/(\d+)", "QuestionsController@index", "quest_by_category", ['category' => 1]);
 
-
+Router::get('/log/', 'LoggerController@index', 'logger');
+Router::get('/blacklist/', 'BlackListController@index', 'blacklist');
+Router::post('/blacklist/', 'BlackListController@store', 'blacklist_store');
 Router::get('/error/', 'QuestionsController@index', 'error');
 /* --- Регистрация маршрутов --- */
 

@@ -18,7 +18,18 @@ class UsersController extends BaseController
         $operation = !empty($params['id']) ? 'update' : 'create';
         $login = Request::get('name');
         $password = Request::get('password');
-        $thisModel->setUser($operation, $login, $password, $params['id']);
+        $result = $thisModel->setUser($operation, $login, $password, $params['id']);
+
+        $userName = $this->getThisModel()->getUserName();
+        if ($result) {
+            if (!empty($params['id'])) {
+                $userId = $params['id'];
+                $logMsg = "$userName обновил пользователя \"$login\" ($userId)";
+            } else {
+                $logMsg = "$userName создал пользователя \"$login\"";
+            }
+            Logger::getLogger('actions')->log($logMsg);
+        }
         $this->index($params);
     }
 
@@ -39,12 +50,8 @@ class UsersController extends BaseController
     public function index($params, $items = [])
     {
         $this->checkLogin(); // если не залогинен - переадресуем на страницу входа
-        $thisModel = $this->getThisModel();
-        if (empty($thisModel->getUserName())) {
-            // если не залогинен
-            Router::redirect('login');
-        }
 
+        $thisModel = $this->getThisModel();
         $params = array_merge($params, $this->getNeedParams()); // добавляем требуемые для меню параметры
         $params['user'] = $thisModel->getUserName();
         $params['items'] = count($items) > 0 ? $items : $thisModel::all();

@@ -13,11 +13,15 @@
     <form class="form-signin" method="POST">
       <p></p>
       <h2 class="form-signin-heading text-center">Авторизация</h2>
-      <label for="inputLogin" class="sr-only">Логин</label>
-      <input type="text" id="inputLogin" class="form-control" placeholder="Логин" name="login"
-             value="{% if authLogin is defined %}{{ authLogin }}{% endif %}" required autofocus>
-      <label for="inputPassword" class="sr-only">Пароль</label>
-      <input type="password" id="inputPassword" class="form-control" placeholder="Пароль" name="password" required>
+      <div class="form-group">
+        <label for="inputLogin" class="sr-only">Логин</label>
+        <input type="text" id="inputLogin" class="form-control" placeholder="Логин" name="login"
+               value="{% if authLogin is defined %}{{ authLogin }}{% endif %}" required autofocus>
+      </div>
+      <div class="form-group">
+        <label for="inputPassword" class="sr-only">Пароль</label>
+        <input type="password" id="inputPassword" class="form-control" placeholder="Пароль" name="password" required>
+      </div>
       <div class="checkbox">
         <label>
           <input type="checkbox" name="remember_me"

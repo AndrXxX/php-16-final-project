@@ -16,7 +16,9 @@ abstract class BaseController
     {
         $modelFile = 'app/models/' . $this->modelName . '.php';
         if (is_file($modelFile)) {
-            include $modelFile;
+            if (!class_exists($this->modelName)) {
+                include $modelFile;
+            }
             $this->model = new $this->modelName();
         } else {
             throw new Exception("Модель $modelFile не обнаружена");
@@ -158,13 +160,16 @@ abstract class BaseController
                     case Question::QUESTION_STATE_WAIT_ANSWER;
                         $params['num_question_states'][$key] = (int)$params['num_question_states'][$key] + (int)$category['wait_answer_questions'];
                         break;
+                    case Question::QUESTION_STATE_BLOCKED;
+                        $params['num_question_states'][$key] = (int)$params['num_question_states'][$key] + (int)$category['blocked_questions'];
+                        break;
                 }
             }
         }
-        foreach ($params['categories'] as $category)
-        {
+        foreach ($params['categories'] as $category) {
             $params['num_question_categories'][$category['id']] = array_sum([(int)$category['published_questions'],
-                (int)$category['hidden_questions'], (int)$category['wait_answer_questions']]);
+                (int)$category['hidden_questions'], (int)$category['wait_answer_questions'],
+                (int)$category['blocked_questions']]);
         }
         $params['num_questions'] = count(Question::all());
 

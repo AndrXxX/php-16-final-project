@@ -47,7 +47,7 @@
       <tr>
         <th rowspan="2">№п/п</th>
         <th rowspan="2">Название</th>
-        <th colspan="4">Вопросов в категории</th>
+        <th colspan="5">Вопросов в категории</th>
         <th rowspan="2">Создана</th>
         <th rowspan="2">Обновлена</th>
         <th rowspan="2">Действия</th>
@@ -57,6 +57,7 @@
         <th>Опубликовано</th>
         <th>Ожидающих ответ</th>
         <th>Скрыто</th>
+        <th>Заблокировано</th>
       </tr>
       {% for item in items %}
         <tr>
@@ -80,6 +81,11 @@
           <td>
             <a href="{{ staticCall('Router', 'route', ['quest_by_category', {'category' : item['id'] }]) }}">
               <span class="badge">{{ item['hidden_questions'] }}</span>
+            </a>
+          </td>
+          <td>
+            <a href="{{ staticCall('Router', 'route', ['quest_by_category', {'category' : item['id'] }]) }}">
+              <span class="badge">{{ item['blocked_questions'] }}</span>
             </a>
           </td>
           <td>{{ item['created_at'] }}</td>

@@ -7,7 +7,7 @@
 {% block body %}
 
   <div class="container">
-    <a class="btn btn-link" href="{{ staticCall('Router', 'route', ['index']) }}">К списку вопросов и ответов</a>
+    <a class="btn btn-primary" href="{{ staticCall('Router', 'route', ['index']) }}">К списку вопросов и ответов</a>
     {% for error in errors %}
       {% if error.getCode() is defined %}
         {% if error.getCode() == 404 %}

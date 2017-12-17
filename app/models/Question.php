@@ -5,6 +5,7 @@ class Question extends BaseModel
     const QUESTION_STATE_PUBLISHED = 'опубликован';
     const QUESTION_STATE_HIDDEN = 'скрыт';
     const QUESTION_STATE_WAIT_ANSWER = 'ожидает ответ';
+    const QUESTION_STATE_BLOCKED = 'заблокирован';
     const QUESTION_STATE_ALL = '%';
 
     protected static $dbTableName = 'php_questions';
@@ -71,6 +72,7 @@ class Question extends BaseModel
             self::QUESTION_STATE_PUBLISHED,
             self::QUESTION_STATE_HIDDEN,
             self::QUESTION_STATE_WAIT_ANSWER,
+            self::QUESTION_STATE_BLOCKED
         );
         if ($withAll) {
             $states[] = self::QUESTION_STATE_ALL;

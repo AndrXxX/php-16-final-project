@@ -18,9 +18,7 @@
         action="{{ staticCall('Router', 'route', ['users.store']) }}"
       {% endif %}
           method="POST">
-      <div class="form-group">
-        <h3>{% if action == 'edit' %}Изменение{% else %}Добавление нового{% endif %} пользователя</h3>
-      </div>
+      <h3>{% if action == 'edit' %}Изменение{% else %}Добавление нового{% endif %} пользователя</h3>
       <div class="form-group">
         <label for="name" class="col-xs-2 control-label">Логин:</label>
         <div class="col-xs-10">
@@ -29,9 +27,10 @@
         </div>
       </div>
       <div class="form-group">
-        <label for="name" class="col-xs-2 control-label">Логин:</label>
+        <label for="name" class="col-xs-2 control-label">Права:</label>
         <div class="col-xs-10">
-          <p class="form-control">{% if editItem['role'] is defined %}{{ editItem['role'] }}{% else %}admin{% endif %}</p>
+          <p
+            class="form-control">{% if editItem['role'] is defined %}{{ editItem['role'] }}{% else %}admin{% endif %}</p>
         </div>
       </div>
       <div class="form-group">
@@ -39,7 +38,7 @@
         <div class="col-xs-10">
           <input class="form-control" type="password" name="password" id="password" placeholder="Пароль"
                  {% if action == 'edit' %}data-toggle="tooltip"
-                 title="Если не нужно менять пароль, оставьте это поле пустым."{% else %}required{% endif %}>
+                 title="Если не нужно менять пароль, оставьте это поле пустым." {% else %}required{% endif %}>
         </div>
       </div>
       <div class="form-group">
@@ -56,59 +55,8 @@
     </form>
   {% endif %}
 
-  {% if action is defined %}
-
-    <div class="table-responsive">
-      <form
-        {% if action == 'edit' %}
-          action="{{ staticCall('Router', 'route', ['users.update', {'id' : id }]) }}"
-        {% else %}
-          action="{{ staticCall('Router', 'route', ['users.store']) }}"
-        {% endif %}
-        method="POST">
-        <table class="table table-bordered">
-          <tr>
-            <th colspan="5">{% if action == 'edit' %}Изменение{% else %}Добавление нового{% endif %} пользователя</th>
-          </tr>
-          <tr>
-            <th>№п/п</th>
-            <th>Логин</th>
-            <th>Пароль</th>
-            <th>Права</th>
-            <th>Действия</th>
-          </tr>
-          {% if action == 'edit' %}
-            {% for user in items %}
-              {% if user['id'] == id %}
-                <tr>
-                  <td>{{ loop.index }}</td>
-                  <td><input type="text" name="name" value="{{ user['name'] }}" placeholder="Логин"></td>
-                  <td><input type="password" name="password" value="" placeholder="Пароль"></td>
-                  <td>{{ user['role'] }}</td>
-                  <td>
-                    <input type="hidden" name='_method' value="PUT">
-                    <input type="hidden" name="id" value="{{ id }}">
-                    <input class="btn btn-success" type="submit" name="save" value="Сохранить">
-                  </td>
-                </tr>
-              {% endif %}
-            {% endfor %}
-          {% else %}
-            <tr>
-              <td>{{ loop.index }}</td>
-              <td><input type="text" name="name" value="" placeholder="Логин"></td>
-              <td><input type="password" name="password" value="" placeholder="Пароль"></td>
-              <td>admin</td>
-              <td>
-                <input class="btn btn-success" type="submit" name="add" value="Добавить">
-              </td>
-            </tr>
-          {% endif %}
-        </table>
-      </form>
-    </div>
-  {% endif %}
   <div class="table-responsive">
+    <h3>Список пользователей</h3>
     <table class="table table-bordered">
       <tr>
         <th>№п/п</th>

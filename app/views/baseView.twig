@@ -72,17 +72,21 @@
             <li class="dropdown {% if 'questions' in staticCall('Router', 'currentRouteName')
               or 'quest' in staticCall('Router', 'currentRouteName') %}active{% endif %}">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown">Вопросы <span class="caret"></span>
-                <span class="badge pull-right">{% if num_questions is defined %}{{ num_questions }}{% endif %}</span></a>
+                <span
+                  class="badge pull-right">{% if num_questions is defined %}{{ num_questions }}{% endif %}</span></a>
               <ul class="dropdown-menu wdth100" role="menu">
                 <li {% if 'questions' in staticCall('Router', 'currentRouteName') %}class="active"{% endif %}>
                   <a href="{{ staticCall('Router', 'route', ['questions.index']) }}">Все
-                    <span class="badge pull-right">{% if num_questions is defined %}{{ num_questions }}{% endif %}</span></a>
+                    <span
+                      class="badge pull-right">{% if num_questions is defined %}{{ num_questions }}{% endif %}</span></a>
                 </li>
                 <li class="divider"></li>
                 <li>По состоянию</li>
                 {% for state in states %}
-                  <li {% if ['state/', loop.index0]|join in staticCall('Router', 'currentRouteUrl')  %}class="active"{% endif %}>
-                    <a href="{{ staticCall('Router', 'route', ['quest_by_state', {'state' : loop.index0 }]) }}">{{ state|capitalize }}
+                  <li
+                    {% if ['state/', loop.index0]|join in staticCall('Router', 'currentRouteUrl') %}class="active"{% endif %}>
+                    <a
+                      href="{{ staticCall('Router', 'route', ['quest_by_state', {'state' : loop.index0 }]) }}">{{ state|capitalize }}
                       <span class="badge pull-right">
                         {% if num_question_states[loop.index0] is defined %}{{ num_question_states[loop.index0] }}{% endif %}
                       </span>
@@ -92,8 +96,10 @@
                 <li class="divider"></li>
                 <li>По теме</li>
                 {% for category in categories %}
-                  <li {% if ['category/', category['id']]|join in staticCall('Router', 'currentRouteUrl')  %}class="active"{% endif %}>
-                    <a href="{{ staticCall('Router', 'route', ['quest_by_category', {'category' : category['id'] }]) }}">{{ category['name'] }}
+                  <li
+                    {% if ['category/', category['id']]|join in staticCall('Router', 'currentRouteUrl') %}class="active"{% endif %}>
+                    <a
+                      href="{{ staticCall('Router', 'route', ['quest_by_category', {'category' : category['id'] }]) }}">{{ category['name'] }}
                       <span class="badge pull-right">
                         {% if num_question_categories[category['id']] is defined %}{{ num_question_categories[category['id']] }}{% endif %}
                       </span>
@@ -101,6 +107,12 @@
                   </li>
                 {% endfor %}
               </ul>
+            </li>
+            <li {% if staticCall('Router', 'currentRouteName') == 'logger' %}class="active"{% endif %}>
+              <a href="{{ staticCall('Router', 'route', ['logger']) }}">Лог</a>
+            </li>
+            <li {% if 'blacklist' in staticCall('Router', 'currentRouteName') %}class="active"{% endif %}>
+              <a href="{{ staticCall('Router', 'route', ['blacklist']) }}">Черный список</a>
             </li>
           </ul>
         </div>

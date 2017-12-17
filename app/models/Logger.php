@@ -1,6 +1,6 @@
 <?php
 
-class Logger
+class Logger extends BaseModel
 {
     //статические переменные
     public static $PATH = 'app/storage/'; // путь к файлу
@@ -10,10 +10,11 @@ class Logger
     protected $file;
     protected $fp;
 
-    public function __construct($name, $file = null)
+    public function __construct($name = null, $fileName = null)
     {
-        $this->name = $name;
-        $this->file = $file;
+        parent::__construct();
+        $this->name = is_null($name) ? 'actions' : $name;
+        $this->file = is_null($fileName) ? self::$PATH . '/' . $this->name . '.log' : self::$PATH . '/' . $fileName;
 
         $this->open();
     }
@@ -24,7 +25,19 @@ class Logger
             return;
         }
 
-        $this->fp = fopen($this->file == null ? self::$PATH . '/' . $this->name . '.log' : self::$PATH . '/' . $this->file, 'a+');
+        $this->fp = fopen($this->file, 'a+');
+    }
+
+    /**
+     * Возвращает содержимое файла
+     * @param $loggerName
+     * @return array
+     */
+    public static function getLogContents($loggerName)
+    {
+        $logger = self::getLogger($loggerName);
+        return explode("\n", fread($logger->fp, filesize($logger->file)));
+
     }
 
     /**
@@ -50,7 +63,7 @@ class Logger
 
         $log = '';
 
-        $log .= '[' . date('D M d H:i:s Y', time()) . '] ';
+        $log .= '[' . date('D d.m.Y H:i:s', time()) . '] ';
         if (func_num_args() > 1) {
             $params = func_get_args();
 

@@ -117,7 +117,7 @@
               <td>{{ question['author'] }}</td>
               <td>{{ question['author_email'] }}</td>
               {% if question['answer'] is empty %}
-                <td class="bg-danger">не указан</td>
+                <td class="bg-warning">не указан</td>
               {% else %}
                 <td class="bg-success">указан</td>
               {% endif %}
@@ -126,6 +126,8 @@
                   class="bg-danger"
                 {% elseif question['state'] == 'опубликован' %}
                   class="bg-success"
+                {% elseif question['state'] == 'заблокирован' %}
+                  class="bg-warning"
                 {% else %}
                   class="bg-info"
                 {% endif %}

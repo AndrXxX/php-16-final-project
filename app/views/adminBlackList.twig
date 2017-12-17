@@ -1,0 +1,24 @@
+{% extends 'baseView.twig' %}
+
+{% block styles %}
+  <link href="resources/css/styles.css" rel="stylesheet">
+{% endblock %}
+
+{% block body %}
+
+  <div class="container">
+    <h2>Черный список</h2>
+    <form class="form-container"
+          action="{{ staticCall('Router', 'route', ['blacklist_store']) }}" method="POST">
+      <div class="form-group">
+        <label for="list" class="control-label">Список запрещенных слов:</label>
+        <textarea class="form-control" rows="5" name="list" id="list"
+                  placeholder="Введите ключевые фразы разделяя их переносом строки"
+                  required>{% if items is defined %}{{ items }}{% endif %}</textarea>
+      </div>
+      <div class="form-group">
+        <input class="btn btn-success" type="submit" name="add" value="Сохранить">
+      </div>
+    </form>
+  </div>
+{% endblock %}

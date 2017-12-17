@@ -23,3 +23,23 @@ body {
 .wdth100 {
   width: 100%;
 }
+
+.bg-primary {
+  background-color: #007bff;
+}
+
+.bg-success {
+  background-color: #2ecc71;
+}
+
+.bg-info {
+  background-color: #17a2b8;
+}
+
+.bg-warning {
+  background-color: #cc8d2e;
+}
+
+.bg-danger {
+  background-color: #cc2eaa;
+}
